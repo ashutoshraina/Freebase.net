@@ -10,10 +10,10 @@ namespace FreebaseTests
         {
         public String type { get; set; }
         public String name { get; set; }
-        public Dictionary<Object, Object> album { get; set; }
+       // public Tuple<String, IEnumerable<String>> album { get; set; }
         public Question ()
             {
-            album = new Dictionary<Object, Object>();
+           // album = new Dictionary<Object, Object>();
             }
         }
     }

@@ -22,8 +22,9 @@ namespace FreebaseTests
 
             request.AddParameter("query",   parsedString.JsonString );
 
-            request.RequestFormat = DataFormat.Json;            
+            request.RequestFormat = DataFormat.Json;
 
+            Console.WriteLine(parsedString.JsonString);
             return client.Execute(request);
             }
         }

@@ -11,6 +11,7 @@ namespace Freebase
         private readonly StringBuilder _sb;
         private readonly Type _type;
         private readonly PropertyInfo[] _propinfo;
+        
         public String JsonString { get; private set; }
 
         public ParseToMql ( Object sender )
@@ -22,59 +23,26 @@ namespace Freebase
             ToMqlString(sender);
         }
 
-        private void HandleString(Object sender, PropertyInfo p)
+        private void HandlePrimitive(Object sender, PropertyInfo p,bool IsString)
         {
+            var value = p.GetValue(sender, null);
             if (p.GetValue(sender, null) == null)
             {
                 _sb.Append("\"" + p.Name + "\"" + ":" + "null");
             }
-            else
+            else if (IsString)
             {
-                _sb.Append("\"" + p.Name + "\"" + ":" + "\"" + p.GetValue(sender, null) + "\"");
-            }
-        }
-
-        private void HandleList(Object sender, PropertyInfo p)
-        {
-            var temp = p.GetValue(sender, null) as List<Object>;
-            if (temp != null)
-                foreach (var s in temp)
-                {
-                    _sb.Append("\n\t" + "\"" + s + "\"" + ",");
-                }
-            _sb.Remove(_sb.ToString().Length - 1, 1);
-            _sb.Append("\n\t" + "}]");
-        }
-
-        private void HandlePrimitive(Object sender, PropertyInfo p)
-        {
-            if (p.GetValue(sender, null) == null)
-            {
-                _sb.Append("\"" + p.Name + "\"" + ":" + "null");
+                _sb.Append("\"" + p.Name + "\"" + ":" + "\"" + value + "\"");
             }
             else
             {
-                _sb.Append("\"" + p.Name + "\"" + ":" + p.GetValue(sender, null));
+                _sb.Append("\"" + p.Name + "\"" + ":" + value);
             }
         }
 
-        private void HandleArray(Object sender, PropertyInfo p)
+        private void HandleEnumerable(IEnumerable<Object> enumerable)
         {
-            var temp = p.GetValue(sender, null) as Object[];
-            if (temp != null)
-                for (var count = 0; count < temp.Length && temp[count] != null; count++)
-                {
-                    _sb.AppendLine();
-                    _sb.Append("\t" + "\"" + temp[count] + "\"" + ",");
-                }
-            _sb.Remove(_sb.ToString().Length - 1, 1);
-            _sb.AppendLine();
-            _sb.Append("\t" + "}]");
-        }
-
-        private void HandleEnumerable(Object value)
-        {
-            var temp = value as IEnumerable<Object>;
+            var temp = enumerable;
             if (temp == null) return;
             var tempEnumerator = temp.GetEnumerator();
             tempEnumerator.Reset();
@@ -96,6 +64,20 @@ namespace Freebase
             {
                 _sb.Append("[]");
             }
+        }
+        
+        private void HandleArray(Object sender, PropertyInfo p)
+        {
+            var temp = p.GetValue(sender, null) as Object[];
+            if (temp != null)
+                for (var count = 0; count < temp.Length && temp[count] != null; count++)
+                {
+                    _sb.AppendLine();
+                    _sb.Append("\t" + "\"" + temp[count] + "\"" + ",");
+                }
+            _sb.Remove(_sb.ToString().Length - 1, 1);
+            _sb.AppendLine();
+            _sb.Append("\t" + "}]");
         }
 
         private void HandleArray(Object value)
@@ -124,47 +106,33 @@ namespace Freebase
         {
             _sb.AppendLine();
             _sb.Append("\t\"" + data + "\"" + ":");
+            TypeSwitch.Do(
+                data,
+                TypeSwitch.Case<Int32>(() => _sb.Append((Int32)value)),
+                TypeSwitch.Case<String>(() => _sb.Append("\"" + value + "\"")),
+                TypeSwitch.Case<bool>(() => _sb.Append(((bool)value).ToString().ToLower())),
+                TypeSwitch.Case<Double>(() => _sb.Append((Double)value)),
+                TypeSwitch.Case<float>(() => _sb.Append((Int32)value)),
+                TypeSwitch.Case<Object[]>(() => HandleArray(value)),
+                TypeSwitch.Case<IEnumerable<Object>>(() => HandleEnumerable(value as IEnumerable<Object>)),
+                TypeSwitch.Case<Dictionary<Object, Object>>(() =>
+                    {
+                        var myDictionary = value as Dictionary<Object, Object>;
+                        _sb.Append("[{");
+                        if (myDictionary != null)
+                            foreach (var kvp in myDictionary)
+                            {
+                                HandleDictionary(kvp.Key, kvp.Value);
+                            }
+                        _sb.Remove(_sb.ToString().Length - 1, 1);
+                        _sb.AppendLine();
+                        _sb.Append("\t" + "}]");
+                    })
+                );
             if (value == null)
             {
                 _sb.Append("null");
-            }
-            else if (value.GetType() == typeof (Int32))
-            {
-                _sb.Append((Int32) value);
-            }
-            else if (value.GetType() == typeof (String))
-            {
-                _sb.Append("\"" + value + "\"");
-            }
-            else if (value.GetType() == typeof (bool))
-            {
-                _sb.Append(((bool) value).ToString().ToLower());
-            }
-            else if (value.GetType() == typeof (Double))
-            {
-                _sb.Append((Double) value);
-            }
-            else if (value.GetType() == typeof (Object[]))
-            {
-                HandleArray(value);
-            }
-            else if (value.GetType() == typeof (IEnumerable<Object>))
-            {
-                HandleEnumerable(value);
-            }
-            else if (value.GetType() == typeof (Dictionary<Object, Object>))
-            {
-                var myDictionary = value as Dictionary<Object, Object>;
-                _sb.Append("[{");
-                if (myDictionary != null)
-                    foreach (var kvp in myDictionary)
-                    {
-                        HandleDictionary(kvp.Key, kvp.Value);
-                    }
-                _sb.Remove(_sb.ToString().Length - 1, 1);
-                _sb.AppendLine();
-                _sb.Append("\t" + "}]");
-            }
+            }           
             _sb.Append(",");
         }
 
@@ -177,11 +145,11 @@ namespace Freebase
                 if (p.PropertyType == typeof (Int32) || p.PropertyType == typeof (Double) ||
                     p.PropertyType == typeof (float) || p.PropertyType == typeof (bool))
                 {
-                    HandlePrimitive(sender, p);
+                    HandlePrimitive(sender, p,false);
                 }
                 else if (p.PropertyType == typeof (String))
                 {
-                    HandleString(sender, p);
+                    HandlePrimitive(sender, p,true);
                 }
                 else
                 {
@@ -196,13 +164,13 @@ namespace Freebase
                         {
                             HandleArray(sender, p);
                         }
-                        else if (p.PropertyType == typeof (List<Object>))
+                        else if (p.PropertyType == typeof (IEnumerable<Object>))
                         {
-                            HandleList(sender, p);
+                            HandleEnumerable(p as IEnumerable<Object>);
                         }
-                        else if (p.PropertyType == typeof (Dictionary<Object, Object>))
+                        else if (p.PropertyType == typeof (IDictionary<Object, Object>))
                         {
-                            var myDictionary = p.GetValue(sender, null) as Dictionary<Object, Object>;
+                            var myDictionary = p.GetValue(sender, null) as IDictionary<Object, Object>;
                             if (myDictionary != null)
                                 foreach (var kvp in myDictionary)
                                 {
@@ -227,5 +195,6 @@ namespace Freebase
             _sb.Append("}");
             JsonString = _sb.ToString();
         }
-        }
+        
     }
+  }
