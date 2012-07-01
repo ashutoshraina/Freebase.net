@@ -186,50 +186,6 @@ namespace Freebase
                         }
                         })
                     );
-                //if (p.PropertyType == typeof (Int32) || p.PropertyType == typeof (Double) || p.PropertyType == typeof (float) || p.PropertyType == typeof (bool))
-                //{
-                //    HandlePrimitive(sender, p,false);
-                //}
-                //else if (p.PropertyType == typeof (String))
-                //{
-                //    HandlePrimitive(sender, p,true);
-                //}
-                //else
-                //{
-                //    if (p.GetValue(sender, null) == null)
-                //    {
-                //        _sb.Append("\"" + p.Name + ":" + "[]");
-                //    }
-                //    else
-                //    {
-                //        _sb.Append("\"" + p.Name + "\"" + ":" + "[{");
-                //        if (p.PropertyType == typeof (Object[]))
-                //        {
-                //            HandleArray(sender, p);
-                //        }
-                //        else if (p.PropertyType == typeof (IEnumerable<Object>))
-                //        {
-                //            HandleEnumerable(p as IEnumerable<Object>);
-                //        }
-                //        else if (p.PropertyType == typeof (IDictionary<Object, Object>))
-                //        {
-                //            var myDictionary = p.GetValue(sender, null) as IDictionary<Object, Object>;
-                //            if (myDictionary != null)
-                //                foreach (var kvp in myDictionary)
-                //                {
-                //                    HandleDictionary(kvp.Key, kvp.Value);
-                //                }
-                //            _sb.Remove(_sb.ToString().Length - 1, 1);
-                //            _sb.AppendLine();
-                //            _sb.Append("\t" + "}]");
-                //        }
-                //        else
-                //        {
-                //            _sb.Append(p.GetValue(sender, null).ToString());
-                //            _sb.Append("}" + "\"");
-                //        }
-                //    }
-                //}
                 _sb.Append(",");
             }
             _sb.Remove(_sb.ToString().Length - 1, 1);
