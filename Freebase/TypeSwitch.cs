@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Freebase
 {
@@ -11,7 +12,20 @@ namespace Freebase
             public Action<object> Action { get; set; }
         }
 
-        public static void Do(object source, params CaseInfo[] cases)
+        public static void Do(PropertyInfo source, params CaseInfo[] cases)
+        {
+            var type = source.PropertyType;
+            foreach (var entry in cases)
+            {
+                if (entry.IsDefault || type == entry.Target)
+                {
+                    entry.Action(source);
+                    break;
+                }
+            }
+        }
+
+        public static void Do(Object source, params CaseInfo[] cases)
         {
             var type = source.GetType();
             foreach (var entry in cases)

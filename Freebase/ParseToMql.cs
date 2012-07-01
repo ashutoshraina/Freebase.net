@@ -26,11 +26,11 @@ namespace Freebase
         private void HandlePrimitive(Object sender, PropertyInfo p,bool IsString)
         {
             var value = p.GetValue(sender, null);
-            if (p.GetValue(sender, null) == null)
+            if (value == null)
             {
                 _sb.Append("\"" + p.Name + "\"" + ":" + "null");
             }
-            else if (IsString)
+           else if (IsString)
             {
                 _sb.Append("\"" + p.Name + "\"" + ":" + "\"" + value + "\"");
             }
@@ -142,52 +142,94 @@ namespace Freebase
             foreach (var p in _propinfo)
             {
                 _sb.AppendLine();
-                if (p.PropertyType == typeof (Int32) || p.PropertyType == typeof (Double) ||
-                    p.PropertyType == typeof (float) || p.PropertyType == typeof (bool))
-                {
-                    HandlePrimitive(sender, p,false);
-                }
-                else if (p.PropertyType == typeof (String))
-                {
-                    HandlePrimitive(sender, p,true);
-                }
-                else
-                {
-                    if (p.GetValue(sender, null) == null)
-                    {
-                        _sb.Append("\"" + p.Name + ":" + "[]");
-                    }
-                    else
-                    {
-                        _sb.Append("\"" + p.Name + "\"" + ":" + "[{");
-                        if (p.PropertyType == typeof (Object[]))
-                        {
-                            HandleArray(sender, p);
-                        }
-                        else if (p.PropertyType == typeof (IEnumerable<Object>))
-                        {
-                            HandleEnumerable(p as IEnumerable<Object>);
-                        }
-                        else if (p.PropertyType == typeof (IDictionary<Object, Object>))
-                        {
-                            var myDictionary = p.GetValue(sender, null) as IDictionary<Object, Object>;
-                            if (myDictionary != null)
-                                foreach (var kvp in myDictionary)
-                                {
-                                    HandleDictionary(kvp.Key, kvp.Value);
-                                }
-                            _sb.Remove(_sb.ToString().Length - 1, 1);
-                            _sb.AppendLine();
-                            _sb.Append("\t" + "}]");
-                        }
-                        else
-                        {
-                            _sb.Append(p.GetValue(sender, null).ToString());
-                            _sb.Append("}" + "\"");
-                        }
-                    }
-                }
 
+                TypeSwitch.Do(
+                    p,
+                    TypeSwitch.Case<Int32>(() => HandlePrimitive(sender, p,false)),
+                    TypeSwitch.Case<Double>(() => HandlePrimitive(sender, p,false)),
+                    TypeSwitch.Case<float>(() => HandlePrimitive(sender, p,false)),
+                    TypeSwitch.Case<bool>(() => HandlePrimitive(sender, p,false)),
+                    TypeSwitch.Case<String>(() => HandlePrimitive(sender, p,true)),
+                    TypeSwitch.Default(() => {                        
+                        if (p.GetValue(sender, null) == null)
+                            {
+                                _sb.Append("\"" + p.Name + ":" + "[]");
+                            }
+                        else
+                            {
+                            _sb.Append("\"" + p.Name + "\"" + ":" + "[{");
+                        TypeSwitch.Do
+                            (
+                            p,
+                            TypeSwitch.Case<Object[]>(() => HandleArray(sender, p)),
+                            TypeSwitch.Case<IEnumerable<Object>>(() => HandleEnumerable(p as IEnumerable<Object>)),
+                            TypeSwitch.Case<IDictionary<Object, Object>>(() =>
+                                                                        {
+                                                                        var myDictionary = p.GetValue(sender, null) as IDictionary<Object, Object>;
+                                                                        if (myDictionary != null)
+                                                                            foreach (var kvp in myDictionary)
+                                                                            {
+                                                                                HandleDictionary(kvp.Key, kvp.Value);
+                                                                            }
+                                                                        _sb.Remove(_sb.ToString().Length - 1, 1);
+                                                                        _sb.AppendLine();
+                                                                        _sb.Append("\t" + "}]");
+                                                                        }
+                                                                        ),
+                            TypeSwitch.Default(
+                                                () => {
+                                                        _sb.Append(p.GetValue(sender, null).ToString());
+                                                        _sb.Append("}" + "\"");
+                                                       }
+                                              )
+                            );
+                        }
+                        })
+                    );
+                //if (p.PropertyType == typeof (Int32) || p.PropertyType == typeof (Double) || p.PropertyType == typeof (float) || p.PropertyType == typeof (bool))
+                //{
+                //    HandlePrimitive(sender, p,false);
+                //}
+                //else if (p.PropertyType == typeof (String))
+                //{
+                //    HandlePrimitive(sender, p,true);
+                //}
+                //else
+                //{
+                //    if (p.GetValue(sender, null) == null)
+                //    {
+                //        _sb.Append("\"" + p.Name + ":" + "[]");
+                //    }
+                //    else
+                //    {
+                //        _sb.Append("\"" + p.Name + "\"" + ":" + "[{");
+                //        if (p.PropertyType == typeof (Object[]))
+                //        {
+                //            HandleArray(sender, p);
+                //        }
+                //        else if (p.PropertyType == typeof (IEnumerable<Object>))
+                //        {
+                //            HandleEnumerable(p as IEnumerable<Object>);
+                //        }
+                //        else if (p.PropertyType == typeof (IDictionary<Object, Object>))
+                //        {
+                //            var myDictionary = p.GetValue(sender, null) as IDictionary<Object, Object>;
+                //            if (myDictionary != null)
+                //                foreach (var kvp in myDictionary)
+                //                {
+                //                    HandleDictionary(kvp.Key, kvp.Value);
+                //                }
+                //            _sb.Remove(_sb.ToString().Length - 1, 1);
+                //            _sb.AppendLine();
+                //            _sb.Append("\t" + "}]");
+                //        }
+                //        else
+                //        {
+                //            _sb.Append(p.GetValue(sender, null).ToString());
+                //            _sb.Append("}" + "\"");
+                //        }
+                //    }
+                //}
                 _sb.Append(",");
             }
             _sb.Remove(_sb.ToString().Length - 1, 1);
