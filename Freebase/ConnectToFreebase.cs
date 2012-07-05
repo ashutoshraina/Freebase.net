@@ -4,7 +4,7 @@ using Freebase;
 namespace FreebaseTests
     {
 
-    static class ConnectToFreebase
+    public static class ConnectToFreebase
         {
 
         public static IRestResponse Connect ( Question question )

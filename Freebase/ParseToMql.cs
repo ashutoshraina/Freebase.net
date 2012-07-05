@@ -85,14 +85,20 @@ namespace Freebase
             var temp = value as Object[];
             var allnull = true;
             if (temp != null)
-                for (var count = 0; count < temp.Length && temp[count] != null; count++)
+                if (temp.Length > 0)
+                    for (var count = 0; count < temp.Length && temp[count] != null; count++)
+                    {
+                        allnull = false;
+                        _sb.AppendLine();
+                        _sb.Append("\t" + "\"" + temp[count] + "\"" + ",");
+                    }
+                else
                 {
-                    allnull = false;
-                    _sb.AppendLine();
-                    _sb.Append("\t" + "\"" + temp[count] + "\"" + ",");
+                    _sb.Append("\t" + "[]"+",");
                 }
             if (!allnull)
             {
+                _sb.Append("\t" + "[]" + ",");
                 _sb.Remove(_sb.ToString().Length - 1, 1);
                 _sb.Append("\t" + "}]");
             }
@@ -102,12 +108,13 @@ namespace Freebase
             }
         }
 
-        private void HandleDictionary(object data, object value)
+        private void HandleDictionary(Object data, Object value)
         {
             _sb.AppendLine();
             _sb.Append("\t\"" + data + "\"" + ":");
+            if(value != null)
             TypeSwitch.Do(
-                data,
+                value,
                 TypeSwitch.Case<Int32>(() => _sb.Append((Int32)value)),
                 TypeSwitch.Case<String>(() => _sb.Append("\"" + value + "\"")),
                 TypeSwitch.Case<bool>(() => _sb.Append(((bool)value).ToString().ToLower())),
@@ -129,7 +136,7 @@ namespace Freebase
                         _sb.Append("\t" + "}]");
                     })
                 );
-            if (value == null)
+            else
             {
                 _sb.Append("null");
             }           
@@ -153,7 +160,7 @@ namespace Freebase
                     TypeSwitch.Default(() => {                        
                         if (p.GetValue(sender, null) == null)
                             {
-                                _sb.Append("\"" + p.Name + ":" + "[]");
+                                _sb.Append("\"" + p.Name + "\""+":" + "[]");
                             }
                         else
                             {
@@ -161,9 +168,9 @@ namespace Freebase
                         TypeSwitch.Do
                             (
                             p,
-                            TypeSwitch.Case<Object[]>(() => HandleArray(sender, p)),
+                            TypeSwitch.Case<Object[]>(() => HandleArray(sender,p)),
                             TypeSwitch.Case<IEnumerable<Object>>(() => HandleEnumerable(p as IEnumerable<Object>)),
-                            TypeSwitch.Case<IDictionary<Object, Object>>(() =>
+                            TypeSwitch.Case<Dictionary<Object, Object>>(() =>
                                                                         {
                                                                         var myDictionary = p.GetValue(sender, null) as IDictionary<Object, Object>;
                                                                         if (myDictionary != null)
@@ -192,7 +199,6 @@ namespace Freebase
             _sb.AppendLine();
             _sb.Append("}");
             JsonString = _sb.ToString();
-        }
-        
+        }        
     }
   }
