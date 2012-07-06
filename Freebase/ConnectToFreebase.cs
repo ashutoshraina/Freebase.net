@@ -1,6 +1,6 @@
 ﻿using System;
-using RestSharp;
 using Freebase;
+using RestSharp;
 namespace FreebaseTests
     {
 

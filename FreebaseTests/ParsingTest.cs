@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RestSharp;
 namespace FreebaseTests
     {
     [TestClass]
