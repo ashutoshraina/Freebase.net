@@ -1,26 +1,25 @@
-﻿using System;
-using Freebase;
+﻿using Freebase;
 using RestSharp;
+using System.Net;
 namespace FreebaseTests
     {
 
     public static class ConnectToFreebase
         {
 
-        public static IRestResponse Connect ( Question question )
-            {
-            var parsedString = new ParseToMql(question);
+        public static HttpStatusCode ConnectByDynamic(dynamic d)
+        {
+            var ParseToMql = new ParseToMql(d);
 
             var client = new RestClient { BaseUrl = "https://www.googleapis.com/freebase/v1/mqlread" };
 
             var request = new RestRequest(Method.GET);
 
-            request.AddParameter("query",   parsedString.JsonString );
+            request.AddParameter("query", ParseToMql.JsonString);
 
             request.RequestFormat = DataFormat.Json;
 
-            Console.WriteLine(parsedString.JsonString);
-            return client.Execute(request);
-            }
+            return client.Execute(request).StatusCode;
+        }
         }
     }
