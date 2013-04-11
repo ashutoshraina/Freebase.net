@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -10,7 +10,11 @@ namespace Freebase
 
         private static IDictionary<string, object> propertyValues;
 
-        public String JsonString { get { return _sb.ToString(); } private set { value = ""; } }
+        public String JsonString 
+                    {   
+                      get { return _sb.ToString(); } 
+                      private set { value = ""; } 
+                    }
 
         public ParseToMql (dynamic d)
         {
@@ -37,28 +41,32 @@ namespace Freebase
 
         private void HandleEnumerable (IEnumerable<Object> enumerable)
         {
-            _sb.Append("[{");
-            var temp = enumerable;
-            if (temp == null) return;
-            var tempEnumerator = temp.GetEnumerator();
-            tempEnumerator.Reset();
-            var allnull = true;
-            while (tempEnumerator.MoveNext())
-            {
-                if (tempEnumerator.Current == null) continue;
-                allnull = false;
-                _sb.AppendLine();
-                _sb.Append("\t\"" + tempEnumerator.Current + "\",");
-            }
-            if (!allnull)
-            {
-                _sb.Remove(_sb.ToString().Length - 1, 1);
-                _sb.Append("\t}]");
-            }
-            else
-            {
-                _sb.Append("[]");
-            }
+          _sb.Append("[{");
+          var temp = enumerable;
+            
+          if (temp == null) return;
+           
+          var tempEnumerator = temp.GetEnumerator();
+          tempEnumerator.Reset();
+          var allnull = true;
+          
+          while (tempEnumerator.MoveNext())
+          {
+            if (tempEnumerator.Current == null) continue;
+            allnull = false;
+            _sb.AppendLine();
+            _sb.Append("\t\"" + tempEnumerator.Current + "\",");
+          }
+          
+          if (!allnull)
+          {
+            _sb.Remove(_sb.ToString().Length - 1, 1);
+            _sb.Append("\t}]");
+          }
+          else
+          {
+            _sb.Append("[]");
+          }
         }
         
         private void HandleArray (Object[] value)
