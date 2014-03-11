@@ -51,15 +51,12 @@ namespace FreebaseTests
             d.name = null;
             d.id = null;
             d.type = "/film/director";
-            ((IDictionary<String, Object>)d).Add("a:film", new Dictionary<Object, Object>() {
-                                                                                               {"name",null},
-                                                                                               {"id",null},
-                                                                                               {"starring",new Dictionary<Object,Object>()
-                                                                                               {
-                                                                                                   {"actor","Tobey Maguire"}
-                                                                                               }
-                                                                                               }    
-                                                                                            });
+            ((IDictionary<String, Object>)d).Add("a:film", new Dictionary<Object, Object>
+                                                           {
+                                                                {"name",null}, {"id",null},
+                                                                {"starring",new Dictionary<Object,Object>{ {"actor","Tobey Maguire"}}
+                                                                }    
+                                                           });
             var statuscode = ConnectToFreebase.ConnectByDynamic(d);
             Assert.AreEqual(System.Net.HttpStatusCode.OK, statuscode);
         }
