@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace FreebaseTests
+using Xunit;
+
+namespace Tests
+{
+    public class ParsingTests
     {
-    [TestClass]
     public class ParsingTest
         {
-        [TestMethod]
+        [Fact]
         public void ParseTest ()
             {
                 dynamic thepolice = new ExpandoObject();
@@ -15,9 +17,10 @@ namespace FreebaseTests
                 thepolice.album = new Object[31];
                 thepolice.name = "The Police";          
                 var statuscode = ConnectToFreebase.ConnectByDynamic(thepolice);
-                Assert.AreEqual(System.Net.HttpStatusCode.OK, statuscode);
+                Assert.Equal(System.Net.HttpStatusCode.OK, statuscode);
             }
-        [TestMethod]
+
+        [Fact]
         public void ParseTestForDictionary()
             {
                 dynamic thepolice = new ExpandoObject();
@@ -28,9 +31,10 @@ namespace FreebaseTests
                 thepolice.album.Add("limit", 2);
                 thepolice.album.Add("genre", new Object[5]);
                 var statuscode = ConnectToFreebase.ConnectByDynamic(thepolice);
-                Assert.AreEqual(System.Net.HttpStatusCode.OK, statuscode);
+                Assert.Equal(System.Net.HttpStatusCode.OK, statuscode);
             }
-        [TestMethod]
+
+        [Fact]
         public void ParseTestForDynamic()
         {
             dynamic thepolice = new ExpandoObject();
@@ -41,10 +45,10 @@ namespace FreebaseTests
             thepolice.album.Add("limit", 2);
             thepolice.album.Add("genre", new Object[5]);
             var statuscode = ConnectToFreebase.ConnectByDynamic(thepolice);
-            Assert.AreEqual(System.Net.HttpStatusCode.OK, statuscode);
+            Assert.Equal(System.Net.HttpStatusCode.OK, statuscode);
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseTestForMultipleDictionaries()
         {
             dynamic d = new ExpandoObject();
@@ -58,8 +62,8 @@ namespace FreebaseTests
                                                                 }    
                                                            });
             var statuscode = ConnectToFreebase.ConnectByDynamic(d);
-            Assert.AreEqual(System.Net.HttpStatusCode.OK, statuscode);
+            Assert.Equal(System.Net.HttpStatusCode.OK, statuscode);
         }
-
-        }
+    }
   }
+}
